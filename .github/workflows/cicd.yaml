@@ -1,0 +1,160 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ dev, main ]
+    paths-ignore:
+     - '.gitignore'
+     - '.dockerignore'
+     - 'README.md'
+  pull_request:
+    branches: [ dev, main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    # image tag 별 outputs
+    outputs:
+      IMAGE_TAG: ${{ steps.set-var.outputs.IMAGE_TAG }}
+    steps :
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # 변수 설정
+    - name: Set var
+      id: set-var
+      run: |
+        echo ::set-output name=ECR_REGISTRY::${{ steps.login-ecr.outputs.registry }}
+        if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo ::set-output name=ECR_REPOSITORY::dev-be-tukktukk
+          echo ::set-output name=IMAGE_TAG::"v$(date +'%Y%m%d%H%M%S')"
+        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo ::set-output name=ECR_REPOSITORY::prod-be-tukktukk
+          echo ::set-output name=IMAGE_TAG::"v$(date +'%Y%m%d%H%M%S')"
+        fi
+
+    # Set Spring active profile
+    - name: Set Spring active profile
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          sed -i 's/active: .*/active: dev/' src/main/resources/application.yaml
+        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          sed -i 's/active: .*/active: dev/' src/main/resources/application.yaml # 수정해야함
+        fi
+        
+    # JDK 설정
+    - name: JDK setting
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+
+    # gradle caching 
+    - name: Gradle Caching
+      uses: actions/cache@v3
+      env:
+        AWS_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}  # GitHub Secrets에서 환경변수를 설정합니다.
+        AWS_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+        AWS_SERVICE_REGION: ${{ secrets.AWS_SERVICE_REGION }}
+        S3_BUCKET_NAME: ${{ secrets.S3_DEV_BUCKET_NAME }}
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Build with Gradle
+      run: |
+        ./gradlew clean bootJar --no-daemon
+      shell: bash
+
+    # image build
+    - name: Docker image Build
+      id: build-image
+      run: |
+        docker build -f Dockerfile -t ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }} .
+
+    # image push
+    - name: Docker image Push
+      id: push-image
+      run: |
+        docker push ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}
+
+  cd:
+    needs: [ ci ]
+    runs-on: ubuntu-latest
+    steps:
+      # dev용 github checkout
+      - name: Checkout Target Repository to dev
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: AWS03-CloudSchool/dev_be_gitops
+          ref: dev
+          lfs: true
+          token: ${{ secrets.CICD }}
+
+      # prod용 github checkout 
+      - name: Checkout Target Repository to prod
+        if: github.ref == 'refs/heads/main'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: AWS03-CloudSchool/dev_be_gitops
+          ref: main
+          lfs: true
+          token: ${{ secrets.CICD }}
+
+      # replace image tag
+      - name: Replace image tag in helm values (LOCAL)
+        uses: mikefarah/yq@master
+        env:
+          IMAGE_TAG: ${{ needs.ci.outputs.IMAGE_TAG }}
+        with:
+          cmd: yq eval -i '.image.tag = env(IMAGE_TAG)' 'backtukktukk/values.yaml'
+
+      # commit helm chart changes
+      - name: Commit helm chart changes
+        env:
+          IMAGE_TAG: ${{ needs.ci.outputs.IMAGE_TAG }}
+        run: |
+          cd backtukktukk
+          git config --global user.email "yeoncomp@gmail.com"
+          git config --global user.name "KM-Yeon"
+
+          git add values.yaml
+          git commit --message "ci: Update docker image tag to $IMAGE_TAG"
+
+      # dev용 push commit
+      - name: Push commit to dev
+        if: github.ref == 'refs/heads/dev'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.CICD }}
+          repository: AWS03-CloudSchool/dev_be_gitops
+          branch: dev
+      
+      # prod용 push commit
+      - name: Push commit to prod
+        if: github.ref == 'refs/heads/main'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.CICD }}
+          repository: AWS03-CloudSchool/dev_be_gitops
+          branch: main
