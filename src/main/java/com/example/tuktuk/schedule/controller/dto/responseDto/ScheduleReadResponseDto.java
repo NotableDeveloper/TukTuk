@@ -2,7 +2,6 @@ package com.example.tuktuk.schedule.controller.dto.responseDto;
 
 import com.example.tuktuk.schedule.domain.Participant;
 import com.example.tuktuk.schedule.domain.Schedule;
-import com.example.tuktuk.schedule.domain.Time;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,30 +11,33 @@ import java.util.List;
 @Builder
 public class ScheduleReadResponseDto {
 
-  private long courtId;
+    private long scheduleId;
 
-  private TimeResponseDto timeResponseDto;
+    private long courtId;
 
-  private String type;
+    private TimeResponseDto timeResponseDto;
 
-  private List<Participant> participants;
+    private String type;
 
-  private String reservationStatus;
+    private List<Participant> participants;
 
-  private int matchRegularFee;
+    private String reservationStatus;
 
-  private int hourlyRentFee;
+    private int matchRegularFee;
 
-  public static ScheduleReadResponseDto from(Schedule schedule, int hourlyRentFee) {
-    return ScheduleReadResponseDto.builder()
-        .courtId(schedule.getCourtId().getValue())
-        .timeResponseDto(TimeResponseDto.from(schedule.getTime()))
-        .type(schedule.getType().name())
-        .participants(schedule.getParticipants())
-        .reservationStatus(schedule.getReservationStatus().name())
-        .matchRegularFee(schedule.getMatchRegularFee().getValue())
-        .hourlyRentFee(hourlyRentFee)
-        .build();
-  }
+    private int hourlyRentFee;
+
+    public static ScheduleReadResponseDto from(Schedule schedule, int hourlyRentFee) {
+        return ScheduleReadResponseDto.builder()
+                .scheduleId(schedule.getId())
+                .courtId(schedule.getCourtId().getValue())
+                .timeResponseDto(TimeResponseDto.from(schedule.getTime()))
+                .type(schedule.getType().name())
+                .participants(schedule.getParticipants())
+                .reservationStatus(schedule.getReservationStatus().name())
+                .matchRegularFee(schedule.getMatchRegularFee().getValue())
+                .hourlyRentFee(hourlyRentFee)
+                .build();
+    }
 
 }

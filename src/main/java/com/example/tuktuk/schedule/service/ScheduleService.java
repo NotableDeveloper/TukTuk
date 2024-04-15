@@ -2,6 +2,7 @@ package com.example.tuktuk.schedule.service;
 
 import com.example.tuktuk.global.page.PageInfo;
 import com.example.tuktuk.global.page.PageResponse;
+import com.example.tuktuk.schedule.controller.dto.requestDto.ReservationRequestDto;
 import com.example.tuktuk.schedule.controller.dto.requestDto.ScheduleCreateReqDto;
 import com.example.tuktuk.schedule.controller.dto.requestDto.ScheduleUpdateReqDto;
 import com.example.tuktuk.schedule.controller.dto.responseDto.*;
@@ -16,10 +17,12 @@ import com.example.tuktuk.stadium.domain.court.CourtId;
 import com.example.tuktuk.stadium.domain.stadium.Stadium;
 import com.example.tuktuk.stadium.repository.CourtRepository;
 import com.example.tuktuk.stadium.repository.StadiumRepository;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -51,7 +54,8 @@ public class ScheduleService {
   }
 
   @Transactional(readOnly = true)
-  public PageResponse<ScheduleSimpleReadResDto> findByProvince(String province, LocalDate date, int pageNumber, int pageSize) {
+  public PageResponse<ScheduleSimpleReadResDto> findByProvince(String province, LocalDate date,
+      int pageNumber, int pageSize) {
     PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
     List<ScheduleSimpleReadResDto> response = new ArrayList<>();
     HashMap<Long, String> courtIdAndStadiumNames = new HashMap<>();
@@ -71,16 +75,18 @@ public class ScheduleService {
       String stadiumName = courtIdAndStadiumNames.get(courtId);
       String stadiumWithCourtName = stadiumName + " " + courtName;
 
-      Page<Schedule> schedulePage = scheduleRepository.findByCourtIdAndDate(courtId, date, pageRequest);
+      Page<Schedule> schedulePage = scheduleRepository.findByCourtIdAndDate(courtId, date,
+          pageRequest);
       totalPage += schedulePage.getTotalPages();
       totalElements += (int) schedulePage.getTotalElements();
 
       schedulePage.forEach(schedule ->
-        response.add(ScheduleSimpleReadResDto.from(schedule, stadiumWithCourtName))
+          response.add(ScheduleSimpleReadResDto.from(schedule, stadiumWithCourtName))
       );
     }
 
-    return new PageResponse<>(response, new PageInfo(pageNumber, pageSize, totalElements, totalPage));
+    return new PageResponse<>(response,
+        new PageInfo(pageNumber, pageSize, totalElements, totalPage));
   }
 
   @Transactional
@@ -136,36 +142,58 @@ public class ScheduleService {
   }
 
   @Transactional
-  public SchedulePerStadiumResDto findAllByOwnerIdAndStadiumId(long stadiumId,
-      int pageNumber, int pageSize) {
+  public SchedulePerStadiumResDto findAllByOwnerIdAndStadiumId(long stadiumId) {
 
     String ownerId = SecurityContextHolderUtil.getUserId();
-    PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
     Stadium stadium = stadiumRepository.findByOwnerIdAndStadiumId(ownerId, stadiumId);
 
     List<ScheduleReadResponseDto> scheduleDtos = new ArrayList<>();
 
-    int totalPage = 0;
-    int totalElements = 0;
-
     for (Court c : stadium.getCourts()) {
       int hourlyRentFee = courtRepository.findHourlyRentFeeById(c.getId());
-      Page<Schedule> schedulePage = scheduleRepository.findByCourtId(c.getId(), pageRequest);
-      scheduleDtos.addAll(
-          schedulePage
-              .get()
-              .map(schedule ->
-                  ScheduleReadResponseDto.from(schedule, hourlyRentFee))
-              .toList());
-      totalPage += schedulePage.getTotalPages();
-      totalElements += (int) schedulePage.getTotalElements();
+      List<Schedule> schedules = scheduleRepository.findByCourtId(c.getId());
+      scheduleDtos.addAll(schedules.stream()
+          .map(schedule ->
+              ScheduleReadResponseDto.from(schedule, hourlyRentFee))
+          .toList());
     }
 
     return SchedulePerStadiumResDto
         .from(StadiumSimpleReadResDto.from(stadium),
-            scheduleDtos,
-            new PageInfo(pageNumber, pageSize, totalElements, totalPage)
+            scheduleDtos
         );
+  }
+
+  @Transactional
+  public MatchEnrollResponseDto registryMatch(long scheduleId) {
+    Schedule schedule = scheduleRepository.findByIdAndType(scheduleId, Type.MATCH).orElseThrow(
+        () -> new RuntimeException("찾을 수 없는 일정입니다."));
+
+    String userId = SecurityContextHolderUtil.getUserId();
+
+    int maxParticipants = courtRepository.findById(schedule.getCourtId().getValue())
+        .get()
+        .getMaxParticipants();
+
+    schedule.enroll(userId, maxParticipants);
+    Schedule enrolledSchedule = scheduleRepository.save(schedule);
+
+    return MatchEnrollResponseDto.from(enrolledSchedule);
+  }
+
+  public ReservationResponseDto reservate(ReservationRequestDto requestDto) {
+    Schedule schedule = scheduleRepository.findByIdAndType(requestDto.getScheduleId(), Type.RENTAL)
+        .orElseThrow(
+            () -> new RuntimeException("찾을 수 없는 일정입니다."));
+
+    String userId = SecurityContextHolderUtil.getUserId();
+    int rentFee = courtRepository.findHourlyRentFeeById(schedule.getCourtId().getValue());
+    int participants = requestDto.getParticipants();
+
+    schedule.enroll(userId, participants);
+    Schedule enrolledSchedule = scheduleRepository.save(schedule);
+
+    return ReservationResponseDto.from(enrolledSchedule, rentFee);
   }
 }

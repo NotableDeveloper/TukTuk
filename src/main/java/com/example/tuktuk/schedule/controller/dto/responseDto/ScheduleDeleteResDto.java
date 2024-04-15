@@ -8,17 +8,20 @@ import lombok.Getter;
 @Builder
 public class ScheduleDeleteResDto {
 
-  private long courtId;
+    private long scheduleId;
 
-  private TimeResponseDto timeResponseDto;
+    private long courtId;
 
-  private String type;
+    private TimeResponseDto timeResponseDto;
 
-  public static ScheduleDeleteResDto from(Schedule schedule) {
-    return ScheduleDeleteResDto.builder()
-        .courtId(schedule.getCourtId().getValue())
-        .timeResponseDto(TimeResponseDto.from(schedule.getTime()))
-        .type(schedule.getType().name())
-        .build();
-  }
+    private String type;
+
+    public static ScheduleDeleteResDto from(Schedule schedule) {
+        return ScheduleDeleteResDto.builder()
+                .scheduleId(schedule.getId())
+                .courtId(schedule.getCourtId().getValue())
+                .timeResponseDto(TimeResponseDto.from(schedule.getTime()))
+                .type(schedule.getType().name())
+                .build();
+    }
 }

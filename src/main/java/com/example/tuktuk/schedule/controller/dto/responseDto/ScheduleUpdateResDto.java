@@ -11,29 +11,32 @@ import java.time.LocalTime;
 @Builder
 public class ScheduleUpdateResDto {
 
-  private final long courtId;
+    private long scheduleId;
 
-  private final LocalDate playDate;
+    private final long courtId;
 
-  private final LocalTime startTime;
+    private final LocalDate playDate;
 
-  private final LocalTime endTime;
+    private final LocalTime startTime;
 
-  private final String type;
+    private final LocalTime endTime;
 
-  private final int matchRegularFee;
+    private final String type;
 
-  private final int hourlyRentFee;
+    private final int matchRegularFee;
 
-  public static ScheduleUpdateResDto from(Schedule courtTimeSlot, int hourlyRentFee) {
-    return ScheduleUpdateResDto.builder()
-        .courtId(courtTimeSlot.getCourtId().getValue())
-        .playDate(courtTimeSlot.getTime().getPlayDate())
-        .startTime(courtTimeSlot.getTime().getStartTime())
-        .endTime(courtTimeSlot.getTime().getEndTime())
-        .type(courtTimeSlot.getType().toString())
-        .matchRegularFee(courtTimeSlot.getMatchRegularFee().getValue())
-        .hourlyRentFee(hourlyRentFee)
-        .build();
-  }
+    private final int hourlyRentFee;
+
+    public static ScheduleUpdateResDto from(Schedule schedule, int hourlyRentFee) {
+        return ScheduleUpdateResDto.builder()
+                .scheduleId(schedule.getId())
+                .courtId(schedule.getCourtId().getValue())
+                .playDate(schedule.getTime().getPlayDate())
+                .startTime(schedule.getTime().getStartTime())
+                .endTime(schedule.getTime().getEndTime())
+                .type(schedule.getType().toString())
+                .matchRegularFee(schedule.getMatchRegularFee().getValue())
+                .hourlyRentFee(hourlyRentFee)
+                .build();
+    }
 }

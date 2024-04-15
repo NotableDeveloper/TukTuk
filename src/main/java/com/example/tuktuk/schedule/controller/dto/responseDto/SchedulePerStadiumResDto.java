@@ -15,15 +15,12 @@ public class SchedulePerStadiumResDto {
 
   private List<ScheduleReadResponseDto> schedules;
 
-  private PageInfo pageInfo;
-
   public static SchedulePerStadiumResDto from(StadiumSimpleReadResDto stadium,
-      List<ScheduleReadResponseDto> schedules, PageInfo pageInfo) {
+      List<ScheduleReadResponseDto> schedules) {
 
     return SchedulePerStadiumResDto.builder()
         .stadium(stadium)
         .schedules(schedules)
-        .pageInfo(pageInfo)
         .build();
   }
 }

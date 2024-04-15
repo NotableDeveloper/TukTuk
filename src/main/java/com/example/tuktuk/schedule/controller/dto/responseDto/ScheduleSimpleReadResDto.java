@@ -8,20 +8,26 @@ import lombok.Getter;
 @Builder
 public class ScheduleSimpleReadResDto {
 
-  private String stadiumWithCourtName;
+    private long scheduleId;
 
-  private TimeResponseDto timeResponseDto;
+    private String stadiumWithCourtName;
 
-  private int participants;
+    private long courtId;
 
-  private String reservationStatus;
+    private TimeResponseDto timeResponseDto;
 
-  public static ScheduleSimpleReadResDto from(Schedule schedule, String stadiumWithCourtName) {
-    return ScheduleSimpleReadResDto.builder()
-        .stadiumWithCourtName(stadiumWithCourtName)
-        .timeResponseDto(TimeResponseDto.from(schedule.getTime()))
-        .participants(schedule.getParticipants().size())
-        .reservationStatus(schedule.getReservationStatus().name())
-        .build();
-  }
+    private int participants;
+
+    private String reservationStatus;
+
+    public static ScheduleSimpleReadResDto from(Schedule schedule, String stadiumWithCourtName) {
+        return ScheduleSimpleReadResDto.builder()
+                .scheduleId(schedule.getId())
+                .stadiumWithCourtName(stadiumWithCourtName)
+                .courtId(schedule.getCourtId().getValue())
+                .timeResponseDto(TimeResponseDto.from(schedule.getTime()))
+                .participants(schedule.getParticipants().size())
+                .reservationStatus(schedule.getReservationStatus().name())
+                .build();
+    }
 }

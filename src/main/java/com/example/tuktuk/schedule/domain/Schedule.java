@@ -56,6 +56,17 @@ public class Schedule {
         this.time.update(reqDto);
     }
 
+    public void enroll(String userId, int maxParticipants){
+        if(participants.size() >= maxParticipants) {
+            throw new RuntimeException("예약 가능한 인원을 초과하였습니다.");
+        }
+
+        else this.participants.add(new Participant(userId));
+    }
+
+    public void withdraw(String userId){
+    }
+
     public void delete(){
         this.isDeleted=true;
     }
