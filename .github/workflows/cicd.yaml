@@ -1,14 +1,14 @@
-name: CI/CD
+#name: CI/CD
 
 on:
-  push:
-    branches: [ dev, main ]
-    paths-ignore:
-     - '.gitignore'
-     - '.dockerignore'
-     - 'README.md'
-  pull_request:
-    branches: [ dev, main ]
+  #push:
+    #branches: [ dev, main ]
+    #paths-ignore:
+     #- '.gitignore'
+     #- '.dockerignore'
+     #- 'README.md'
+  #pull_request:
+    #branches: [ dev, main ]
 
 jobs:
   ci:
@@ -54,7 +54,7 @@ jobs:
         elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
           sed -i 's/active: .*/active: dev/' src/main/resources/application.yaml # 수정해야함
         fi
-        
+
     # JDK 설정
     - name: JDK setting
       uses: actions/setup-java@v2
@@ -62,7 +62,7 @@ jobs:
         java-version: '17'
         distribution: 'adopt'
 
-    # gradle caching 
+    # gradle caching
     - name: Gradle Caching
       uses: actions/cache@v3
       env:
@@ -110,7 +110,7 @@ jobs:
           lfs: true
           token: ${{ secrets.CICD }}
 
-      # prod용 github checkout 
+      # prod용 github checkout
       - name: Checkout Target Repository to prod
         if: github.ref == 'refs/heads/main'
         uses: actions/checkout@v4
@@ -149,7 +149,7 @@ jobs:
           github_token: ${{ secrets.CICD }}
           repository: AWS03-CloudSchool/dev_be_gitops
           branch: dev
-      
+
       # prod용 push commit
       - name: Push commit to prod
         if: github.ref == 'refs/heads/main'
