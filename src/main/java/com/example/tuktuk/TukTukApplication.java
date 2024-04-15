@@ -1,5 +1,6 @@
 package com.example.tuktuk;
 
+import com.example.tuktuk.config.SecurityConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TukTukApplication {
 
     public static void main(String[] args) {
-
 
         SpringApplication.run(TukTukApplication.class, args);
     }

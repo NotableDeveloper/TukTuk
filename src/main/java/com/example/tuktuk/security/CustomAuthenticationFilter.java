@@ -57,10 +57,13 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         }
 
         else throw new IllegalStateException("유효하지 않은 토큰입니다.");
+
+
     }
 
     private boolean isValidToken(String accessToken) {
         String id = null;
+
         try {
             List<AttributeType> attributeTypes = userInfoProvider.getUserInfoFromAuthServer(accessToken);
             UserInfo userInfo = new UserInfo(attributeTypes);
@@ -70,7 +73,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         }
 
         User user = userRepository.findById(id).get();
-        log.info("user.roles={}",user.getRoles());
         this.saveAuthenticationToSecurityContextHolder(user);
 
         return true;

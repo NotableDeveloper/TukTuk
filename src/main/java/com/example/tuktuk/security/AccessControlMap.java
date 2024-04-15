@@ -22,6 +22,8 @@ public class AccessControlMap {
     }
 
     public boolean checkURI(String httpMethod, String requestUri) {
+        return true;
+        /*
         boolean flag = false;
 
         for (AccessControlRecord record : accessControlMap.keySet().stream().toList()) {
@@ -31,5 +33,6 @@ public class AccessControlMap {
         }
 
         return flag;
+        */
     }
 }

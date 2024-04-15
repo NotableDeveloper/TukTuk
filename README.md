@@ -1,5 +1,5 @@
 # TukTuk
-운동 경기를 하고 싶은 개인들을 매칭하여 경기장을 대여 해주는 플랫폼 서비스의 백엔드 레포지토리입니다.
+운동 경기를 하고 싶은 개인들을 매칭하여 경기장을 대여 해주는 플랫폼 서비스의백엔드 레포지토리입니다.
 
 ## Spec
 Language : Java 17
@@ -42,8 +42,7 @@ p.s 만약 CRLF로 인하여 start.sh 파일이 실행되지 않는다면 아래
 $ sed -i 's/\r//' start.sh
 
 ## 프로젝트 데모
-
-[video](readme/TukTuk%20Viedo.mp4)
+[Demo Video](readme/TukTuk%20Viedo.mp4)
 
 ## 기타
-[Report](readme/TukTuk%20Report.pdf)
+[Project Report](readme/TukTuk%20Report.pdf)
