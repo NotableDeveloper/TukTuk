@@ -43,7 +43,7 @@ $ sed -i 's/\r//' start.sh
 
 ## 프로젝트 데모
 
-![video]()
+[video](readme/TukTuk%20Viedo.mp4)
 
 ## 기타
-![Report]()
+[Report](readme/TukTuk%20Report.pdf)
