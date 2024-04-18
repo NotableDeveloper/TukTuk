@@ -1,5 +1,6 @@
 # TukTuk
 운동 경기를 하고 싶은 개인들을 매칭하여 경기장을 대여 해주는 플랫폼 서비스의 백엔드 레포지토리입니다.
+<br/><br/>
 
 ## Spec
 Language : Java 17 <br/>
@@ -7,6 +8,7 @@ Framework : SpringBoot 3.2.1 <br/>
 Build : Gradle 8.5 <br/>
 Database : MySQL <br/>
 Environment : AWS EKS (Kubernetes)
+<br/><br/>
 
 ## 제공하는 기능
 TukTuk의 백엔드 애플리케이션에서는 다음과 같은 기능들을 제공합니다.
@@ -25,6 +27,8 @@ TukTuk은 kakao social login을 통해 인증 절차를 거쳐 로그인 및 회
 
 [로그인 API 명세](https://documenter.getpostman.com/view/32243568/2s9YysD2L4#771a76b3-5c51-4c4b-98aa-eba3768d66e3)<br/>
 
+<br/><br/>
+
 ### 2. 경기장 및 코트에 관한 CRUD API
 TukTuk의 도메인에는 경기장(Stadium)과 코트(Court)가 존재합니다. 경기장은 코트를 포함하는 개체이며, <br/>
 하나의 경기장은 다수의 코트를 가질 수 있습니다. 반대로 하나의 코트는 반드시 하나의 경기장에 속해야합니다. <br>
@@ -33,6 +37,8 @@ TukTuk의 도메인에는 경기장(Stadium)과 코트(Court)가 존재합니다
 - "서울 체육관"이라는 체육관(Stadium)이 존재하고, 그 내부에 "A 경기장"이라는 이름의 축구 코트와 <br/>
 "B 경기장" 이라는 이름의 농구 코트가 있다면 "서울 체육관"은 두 개의 코트(축구장과 농구장)을 가지는 것이 된다. 
 - "A 경기장"은 "서울 체육관"에 속하는 고유한 코트이다. 다른 Stadium에서는 가질 수 없다.
+
+<br/>
 
 다음은 경기장에 관한 CRUD API에 관한 설명입니다.
 
@@ -81,6 +87,8 @@ TukTuk의 도메인에는 경기장(Stadium)과 코트(Court)가 존재합니다
 </div>
 </details>
 
+<br/>
+
 다음은 코트에 관한 CRUD API에 관한 설명입니다.
 
 <details>
@@ -118,6 +126,8 @@ TukTuk의 도메인에는 경기장(Stadium)과 코트(Court)가 존재합니다
 
 </div>
 </details>
+
+<br/><br/>
 
 ### 3. 경기 매칭 및 대여에 관한 API
 TukTuk의 경기장 소유주는 자신이 등록한 경기장의 코트에 대해 매치 및 대여가 가능하도록 서비스에 등록할 수 있습니다. <br/>
@@ -171,6 +181,8 @@ TukTuk의 경기장 소유주는 자신이 등록한 경기장의 코트에 대�
 </div>
 </details>
 
+<br/><br/>
+
 ## 프로젝트 시연
 ### 프로젝트 실행
 docker 디렉터리 내에 Docker compose 파일이 작성되어있습니다. <br/> 
@@ -191,10 +203,14 @@ $ stop.sh
 
 $ sed -i 's/\r//' start.sh
 
+<br/><br/>
+
 ## 기타
 [프로젝트 데모 동영상](readme/TukTuk%20Viedo.mp4)
 
 [프로젝트 완료 보고서](readme/TukTuk%20Report.pdf)
+
+<br/><br/>
 
 # Authorization and Authentication
 TukTuk은 사용자를 경기장 소유주, 일반 사용자로 구분합니다. 따라서 사용자 정보를 저장하고, <br/>
